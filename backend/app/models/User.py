@@ -40,6 +40,7 @@ class User(db.Model, UserMixin):
     vehicles = db.relationship(
         'Vehicle',
         backref='user',
+        lazy=True,
         cascade='all, delete-orphan',
         passive_deletes=True
     )
@@ -47,6 +48,7 @@ class User(db.Model, UserMixin):
     favorites = db.relationship(
         'Favorite',
         backref='user',
+        lazy=True,
         cascade='all, delete-orphan',
         passive_deletes=True
     )
@@ -54,6 +56,7 @@ class User(db.Model, UserMixin):
     reviews = db.relationship(
         'Review',
         backref='user',
+        lazy=True,
         cascade='all, delete-orphan',
         passive_deletes=True
     )

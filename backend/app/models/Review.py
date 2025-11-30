@@ -11,9 +11,5 @@ class Review(db.Model):
     comment = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Relationships
-    user = db.relationship('User', backref='reviews')
-    # parking_lot relationship is defined in ParkingLot model with CASCADE
-    
     def __repr__(self):
         return f'<Review {self.id}: {self.rating} stars for lot {self.parking_lot_id}>'

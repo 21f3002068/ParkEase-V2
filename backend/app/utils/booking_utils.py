@@ -164,9 +164,8 @@ def enhanced_booking_logic(lot_id, user, vehicle_id, expected_arrival_time, expe
                     status = "Pending"  # Will be confirmed when spot becomes available
                     break
         
-        # 6. If still no spot, assign to first spot as pending (queue system)
-        if not available_spot and all_spots:
-            available_spot = all_spots[0]
+        # 6. If still no spot, the booking is pending without a spot assigned
+        if not available_spot:
             status = "Pending"
         
         return {

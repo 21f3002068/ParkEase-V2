@@ -1798,8 +1798,8 @@ export default {
     async fetchCurrentlyParked() {
       try {
         const reservations = await userApi.getReservations();
-        // Find reservation that has start time but no end time (currently parked)
-        const parked = reservations.find(r => r.start && !r.end);
+        // Find reservation with status 'Parked' (currently parked)
+        const parked = reservations.find(r => r.status === 'Parked');
 
         if (parked) {
           // Get additional details for the parked vehicle
@@ -1815,9 +1815,10 @@ export default {
             id: parked.id,
             vehicle_number: vehicle?.vehicle_number || 'Unknown',
             lot_name: lot?.location || 'Unknown Location',
-            spotNumber: reservation.spot_number 
-              ? `#${reservation.spot_number}` 
-              : (reservation.spot_id ? `#${reservation.spot_id}` : 'TBD'),            parking_timestamp: parked.start,
+            spot_number: parked.spot_number 
+              ? `#${parked.spot_number}` 
+              : (parked.spot_id ? `#${parked.spot_id}` : 'TBD'),            
+            parking_timestamp: parked.parking_timestamp,
             status: 'Parked'
           };
         } else {
@@ -1828,7 +1829,6 @@ export default {
         this.currentlyParked = null;
       }
     },
-
     async fetchUpcomingBooking() {
       try {
         const reservations = await userApi.getReservations();

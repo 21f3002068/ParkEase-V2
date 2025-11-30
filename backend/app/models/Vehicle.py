@@ -8,8 +8,5 @@ class Vehicle(db.Model):
     vehicle_name = db.Column(db.String(50), nullable=False)  
     color = db.Column(db.String(20), nullable=True)
 
-    # Relationships
-    user = db.relationship('User', backref='vehicles')
-
     def __repr__(self):
         return f'<Vehicle {self.vehicle_number} ({self.vehicle_name})>'

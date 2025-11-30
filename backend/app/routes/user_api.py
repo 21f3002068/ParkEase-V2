@@ -180,6 +180,9 @@ class BookSpot(Resource):
             expected_departure_time = datetime.strptime(expected_departure, '%H:%M').time()
         except ValueError:
             return {"error": "Invalid time format. Use HH:MM format"}, 400
+
+        if datetime.combine(datetime.today().date(), expected_arrival_time) < datetime.now():
+            return {"error": "Expected arrival time cannot be in the past."}, 400
         
         # Validate time constraints
         time_validation = validate_booking_time_constraints(
@@ -617,19 +620,26 @@ class ActiveReservation(Resource):
     @roles_required('user')
     def get(self):
         user_id = current_user.id
-        reservation = Reservation.query.filter(
-            Reservation.user_id == user_id,
-            Reservation.leaving_timestamp == None,
-            Reservation.status.notin_(['Cancelled', 'Rejected'])
+        reservation = Reservation.query.filter_by(
+            user_id=user_id,
+            status='Parked'
         ).first()
-        if not reservation:
-            return {"message": "No active reservation"}, 404
 
+        if not reservation:
+            return {"message": "No parked vehicle found"}, 404
+
+        # A parked reservation is guaranteed to have a spot and vehicle
         return {
             "id": reservation.id,
             "spot_id": reservation.spot_id,
-            "lot_id": reservation.spot.lot_id,
-            "start": reservation.parking_timestamp.isoformat() if reservation.parking_timestamp else None
+            "lot_id": reservation.spot.lot.id,
+            "lot_name": reservation.spot.lot.prime_location_name,
+            "spot_number": reservation.spot.spot_number,
+            "start": reservation.parking_timestamp.isoformat(),
+            "expected_departure": reservation.expected_departure.isoformat(),
+            "vehicle_number": reservation.vehicle.vehicle_number,
+            "vehicle_name": reservation.vehicle.vehicle_name,
+            "status": reservation.status,
         }
 
 

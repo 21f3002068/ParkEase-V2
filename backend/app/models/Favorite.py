@@ -10,7 +10,6 @@ class Favorite(db.Model):
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     
     # Relationships
-    user = db.relationship('User', backref='favorites')
     lot = db.relationship('ParkingLot', backref='favorited_by')
     
     # Ensure unique user-lot combination
