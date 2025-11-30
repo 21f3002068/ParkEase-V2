@@ -1,8 +1,10 @@
-import Vue from 'vue'
+import { createApp } from 'vue'
 import App from './App.vue'
+import { router } from './router'
+import ToastPlugin from './utils/toast'
 
-Vue.config.productionTip = false
+const app = createApp(App)
 
-new Vue({
-  render: h => h(App),
-}).$mount('#app')
+app.use(router)
+app.use(ToastPlugin)
+app.mount('#app')
