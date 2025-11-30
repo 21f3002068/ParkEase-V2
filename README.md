@@ -8,7 +8,7 @@ This is a Vehicle Parking web application specialized in four-wheelers. It is an
 
 ## Project Demo
 
-[ytvideo link]
+[Youtube Video](https://youtu.be/2-0TXPrJNqE)
 
 ## Tech Stack
 

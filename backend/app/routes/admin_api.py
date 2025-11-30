@@ -1839,5 +1839,22 @@ class TaskLogs(Resource):
         except Exception as e:
             return {"error": f"Failed to fetch task logs: {str(e)}"}, 500
 
+    @auth_required('token')
+    @roles_required('admin')
+    def delete(self):
+        """Clear all task execution logs"""
+        try:
+            from ..utils.task_logger import clear_all_task_logs
+            
+            cleared_count = clear_all_task_logs()
+            
+            return {
+                "message": f"Successfully cleared {cleared_count} task logs.",
+                "count": cleared_count
+            }
+            
+        except Exception as e:
+            return {"error": f"Failed to clear task logs: {str(e)}"}, 500
+
 
 

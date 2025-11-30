@@ -47,3 +47,20 @@ def get_recent_task_logs(limit=50):
     except Exception as e:
         print(f"[TaskLog] Error fetching logs: {str(e)}")
         return []
+
+def clear_all_task_logs():
+    """
+    Deletes all task logs from the database.
+    
+    Returns:
+        The number of logs cleared.
+    """
+    try:
+        num_rows_deleted = db.session.query(TaskLog).delete()
+        db.session.commit()
+        print(f"[TaskLog] Cleared {num_rows_deleted} task logs.")
+        return num_rows_deleted
+    except Exception as e:
+        print(f"[TaskLog] Error clearing logs: {str(e)}")
+        db.session.rollback()
+        raise e

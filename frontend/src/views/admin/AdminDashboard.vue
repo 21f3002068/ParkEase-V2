@@ -91,6 +91,12 @@
             <div class="log-message">{{ log.message }}</div>
           </div>
         </div>
+        <div class="task-log-footer">
+          <button @click="clearLogs" class="clear-logs-btn">
+            <i class="fas fa-trash-alt"></i>
+            Clear Logs
+          </button>
+        </div>
       </div>
 
       <!-- Overview Cards - Visible on main tabs only (not on visualization or tasks) -->
@@ -2915,6 +2921,32 @@ export default {
         console.warn('Failed to load task logs from storage', err);
       }
     },
+
+    async clearLogs() {
+      if (!confirm('Are you sure you want to clear all task logs? This action cannot be undone.')) {
+        return;
+      }
+      try {
+        const token = localStorage.getItem('auth-token');
+        const response = await fetch('http://localhost:5000/api/admin/tasks/logs', {
+          method: 'DELETE',
+          headers: {
+            'auth-token': token,
+          },
+        });
+        if (response.ok) {
+          this.taskLogs = [];
+          this.$toast.success('Task logs cleared successfully!');
+          this.showTaskLogs = false; // Optionally close the dropdown
+        } else {
+          const errorData = await response.json();
+          this.$toast.error(errorData.error || 'Failed to clear task logs.');
+        }
+      } catch (err) {
+        console.error('Error clearing task logs:', err);
+        this.$toast.error('An error occurred while clearing logs: ' + err.message);
+      }
+    },
     saveTaskLogs() {
       try {
         const logsToPersist = this.taskLogs.slice(0, 50);
@@ -3143,5 +3175,58 @@ label small {
 
 .user-id-link:hover {
   text-decoration: underline;
+}
+
+.task-logs-dropdown-global {
+  position: absolute;
+  top: 75px;
+  right: 20px;
+  width: 380px;
+  max-height: 450px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 5px 10px rgba(0, 0, 0, 0.05);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+}
+
+.task-log-footer {
+  padding: 8px 12px;
+  border-top: 1px solid #e0e0e0;
+  text-align: right;
+  background-color: #f7f7f7;
+}
+
+.clear-logs-btn {
+  background-color: #fbebeb; /* Light red background */
+  color: #c53030; /* Darker red text */
+  border: 1px solid #f5c6cb;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.clear-logs-btn i {
+  font-size: 0.8rem;
+}
+
+.clear-logs-btn:hover {
+  background-color: #f8d7da; /* Slightly darker red on hover */
+  border-color: #f1b0b7;
+  color: #a32a2a;
+}
+
+.clear-logs-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25);
 }
 </style>
