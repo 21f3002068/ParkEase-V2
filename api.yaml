@@ -1,0 +1,655 @@
+openapi: 3.0.3
+info:
+  title: "ParkEase API"
+  description: "API for the ParkEase parking management system. Provides endpoints for managing parking lots, users, reservations, and analytics for both users and the admin panel."
+  version: "2.0.0"
+servers:
+  - url: "http://localhost:5000/api"
+    description: "Local development server"
+
+components:
+  securitySchemes:
+    tokenAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # AUTH SCHEMAS
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+    RegisterInput:
+      type: object
+      required: [username, email, password, first_name, last_name]
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+    AuthToken:
+      type: object
+      properties:
+        auth_token:
+          type: string
+          description: "JWT token for authentication."
+
+    # SHARED SCHEMAS
+    ParkingLot:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        prime_location_name:
+          type: string
+          example: "Downtown Parking"
+        address:
+          type: string
+          example: "123 Main St, Anytown"
+        pincode:
+          type: string
+          example: "123456"
+        price:
+          type: number
+          format: float
+          example: 50
+        total_spots:
+          type: integer
+          example: 100
+        available_spots:
+          type: integer
+          example: 75
+        occupied_spots:
+          type: integer
+          example: 25
+        available_from:
+          type: string
+          description: "Time in HH:MM format"
+          example: "06:00"
+        available_to:
+          type: string
+          description: "Time in HH:MM format"
+          example: "22:00"
+        is_active:
+          type: boolean
+          example: true
+
+    ParkingLotInput:
+      type: object
+      required:
+        - prime_location_name
+        - address
+        - pincode
+        - price
+        - number_of_spots
+      properties:
+        prime_location_name:
+          type: string
+          example: "Downtown Parking"
+        address:
+          type: string
+          example: "123 Main St, Anytown"
+        pincode:
+          type: string
+          example: "123456"
+        price:
+          type: number
+          format: float
+          example: 50
+        number_of_spots:
+          type: integer
+          example: 100
+        available_from:
+          type: string
+          description: "Time in HH:MM format"
+          example: "06:00"
+        available_to:
+          type: string
+          description: "Time in HH:MM format"
+          example: "22:00"
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 101
+        username:
+          type: string
+          example: "johndoe"
+        email:
+          type: string
+          format: email
+          example: "john.doe@example.com"
+        first_name:
+          type: string
+          example: "John"
+        last_name:
+          type: string
+          example: "Doe"
+        active:
+          type: boolean
+          example: true
+        is_flagged:
+          type: boolean
+          example: false
+        created_at:
+          type: string
+          format: date-time
+        roles:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: "user"
+
+    Reservation:
+      type: object
+      properties:
+        id:
+          type: integer
+        user:
+          type: object
+          properties:
+            first_name:
+              type: string
+            last_name:
+              type: string
+            email:
+              type: string
+        parking_lot:
+          type: object
+          properties:
+            name:
+              type: string
+            address:
+              type: string
+        spot:
+          type: object
+          properties:
+            spot_number:
+              type: string
+        vehicle:
+          type: object
+          properties:
+            license_plate:
+              type: string
+            model:
+              type: string
+        parking_timestamp:
+          type: string
+          format: date-time
+        leaving_timestamp:
+          type: string
+          format: date-time
+        parking_cost:
+          type: number
+        status:
+          type: string
+          enum: [Active, Completed, Cancelled]
+
+    TaskStatus:
+      type: object
+      properties:
+        message:
+          type: string
+        task_id:
+          type: string
+        status:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: A description of the error.
+
+security:
+  - tokenAuth: [] # By default, require token for all endpoints
+
+tags:
+  - name: Authentication
+    description: "User authentication and registration"
+  - name: User
+    description: "Operations for the currently authenticated user"
+  - name: Parking Lots (User)
+    description: "User-facing operations for parking lots"
+  - name: Admin: Parking Lots
+    description: "Admin operations for managing parking lots"
+  - name: Admin: Users
+    description: "Admin operations for managing users"
+  - name: Admin: Reservations
+    description: "Admin operations for managing reservations"
+  - name: Admin: Analytics
+    description: "Endpoints for retrieving analytics data"
+  - name: Admin: Tasks
+    description: "Endpoints for managing background tasks and data integrity"
+
+paths:
+  # AUTHENTICATION
+  /auth/register:
+    post:
+      tags: [Authentication]
+      summary: "Register a new user"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterInput'
+      responses:
+        '201':
+          description: "User created successfully."
+        '400':
+          description: "Invalid input or user already exists."
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: "Log in a user"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginInput'
+      responses:
+        '200':
+          description: "Login successful."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthToken'
+        '401':
+          description: "Invalid credentials."
+
+  # USER-FACING PARKING LOTS
+  /parking_lots:
+    get:
+      tags: [Parking Lots (User)]
+      summary: "Search for available parking lots"
+      description: "Retrieves a list of active parking lots, optionally filtered by location."
+      parameters:
+        - name: query
+          in: query
+          schema:
+            type: string
+          description: "Search by location name, address, or pincode."
+      responses:
+        '200':
+          description: "A list of available parking lots."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ParkingLot'
+
+  /parking_lots/{id}:
+    get:
+      tags: [Parking Lots (User)]
+      summary: "Get details of a specific parking lot"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: "Parking lot details."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingLot'
+        '404':
+          description: "Parking lot not found."
+
+  # USER-FACING RESERVATIONS
+  /reservations:
+    post:
+      tags: [User]
+      summary: "Create a new reservation"
+      description: "Creates a reservation for the authenticated user at a specific parking lot."
+      security:
+        - tokenAuth: [] # This endpoint requires authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                lot_id:
+                  type: integer
+                vehicle_id:
+                  type: integer
+      responses:
+        '201':
+          description: "Reservation created successfully."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '400':
+          description: "Invalid input or no spots available."
+
+  /my-reservations:
+    get:
+      tags: [User]
+      summary: "Get current user's reservations"
+      security:
+        - tokenAuth: [] # This endpoint requires authentication
+      responses:
+        '200':
+          description: "A list of the user's reservations."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reservation'
+
+  # ADMIN PATHS
+  /admin/parking_lots:
+    get:
+      tags: [Admin: Parking Lots]
+      summary: "Get all parking lots"
+      description: "Retrieves a list of all parking lots with their current status."
+      responses:
+        '200':
+          description: "A list of parking lots."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ParkingLot'
+    post:
+      tags: [Admin: Parking Lots]
+      summary: "Create a new parking lot"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParkingLotInput'
+      responses:
+        '201':
+          description: "Parking lot created successfully."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingLot'
+        '400':
+          description: "Invalid input."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/parking_lots/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      tags: [Admin: Parking Lots]
+      summary: "Get a specific parking lot"
+      responses:
+        '200':
+          description: "Parking lot details."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingLot'
+        '404':
+          description: "Parking lot not found."
+    put:
+      tags: [Admin: Parking Lots]
+      summary: "Update a parking lot"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParkingLotInput'
+      responses:
+        '200':
+          description: "Parking lot updated successfully."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingLot'
+        '404':
+          description: "Parking lot not found."
+    delete:
+      tags: [Admin: Parking Lots]
+      summary: "Delete a parking lot"
+      description: "Deletes a parking lot only if it has no occupied spots."
+      responses:
+        '200':
+          description: "Parking lot deleted successfully."
+        '400':
+          description: "Lot has active reservations or is occupied."
+        '404':
+          description: "Parking lot not found."
+
+  /admin/parking_lots/{id}/toggle:
+    post:
+      tags: [Admin: Parking Lots]
+      summary: "Activate or deactivate a parking lot"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: "Status toggled successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  lot:
+                    $ref: '#/components/schemas/ParkingLot'
+
+  /admin/parking_lots/visualization:
+    get:
+      tags: [Admin: Parking Lots]
+      summary: "Get data for parking lot visualization"
+      description: "Retrieves a simplified list of lots and their spots for the 'Bird's Eye View'."
+      responses:
+        '200':
+          description: "Visualization data."
+
+  /admin/users:
+    get:
+      tags: [Admin: Users]
+      summary: "Get all users"
+      responses:
+        '200':
+          description: "A list of users."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+
+  /admin/users/export:
+    post:
+      tags: [Admin: Users]
+      summary: "Export users to CSV"
+      description: "Triggers a background job to generate a CSV of all users and sends it via email."
+      responses:
+        '202':
+          description: "Export task accepted."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskStatus'
+
+  /admin/users/{id}/details:
+    get:
+      tags: [Admin: Users]
+      summary: "Get detailed information for a user"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: "User details including vehicles and reservations."
+
+  /admin/users/{id}/flag:
+    post:
+      tags: [Admin: Users]
+      summary: "Flag a user"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: "User flagged successfully."
+    delete:
+      tags: [Admin: Users]
+      summary: "Unflag a user"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: "User unflagged successfully."
+
+  /admin/reservations:
+    get:
+      tags: [Admin: Reservations]
+      summary: "Get paginated reservations"
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [all, active, completed]
+            default: all
+      responses:
+        '200':
+          description: "A paginated list of reservations."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reservations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Reservation'
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      per_page:
+                        type: integer
+                      total:
+                        type: integer
+                      pages:
+                        type: integer
+
+  /admin/reservations/export:
+    post:
+      tags: [Admin: Reservations]
+      summary: "Export reservations to CSV"
+      description: "Triggers a background job to generate a CSV of reservations based on a filter."
+      responses:
+        '202':
+          description: "Export task accepted."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskStatus'
+
+  /admin/analytics/dashboard:
+    get:
+      tags: [Admin: Analytics]
+      summary: "Get dashboard analytics data"
+      description: "Retrieves all aggregated data for the overview cards and charts."
+      responses:
+        '200':
+          description: "Analytics data."
+
+  /admin/tasks/trigger/{task_name}:
+    post:
+      tags: [Admin: Tasks]
+      summary: "Trigger a background task"
+      parameters:
+        - name: task_name
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [cleanup_old_csv_files, system_health_check, auto_release_expired_reservations, daily_update]
+      responses:
+        '200':
+          description: "Task triggered successfully."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskStatus'
+
+  /admin/tasks/logs:
+    get:
+      tags: [Admin: Tasks]
+      summary: "Get task logs"
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: "A list of recent task logs."
+
