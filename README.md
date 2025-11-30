@@ -197,7 +197,7 @@ ParkEase uses Redis (Database 1) for API response caching to improve performance
 
 ### Admin
 - Email: `admin@parkease.com`
-- Password: `admin123`
+- Password: `admin`
 
 ### User
 - Email: `user@parkease.com`
