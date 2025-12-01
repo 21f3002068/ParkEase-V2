@@ -8,7 +8,7 @@ This is a Vehicle Parking web application specialized in four-wheelers. It is an
 
 ## Project Demo
 
-[Youtube Video](https://youtu.be/2-0TXPrJNqE)
+[<img width="1238" height="691" alt="Gemini_Generated_Image_8k4xfd8k4xfd8k4x" src="https://github.com/user-attachments/assets/0891a57c-a844-45a3-bddd-3add3e0296ae" />](https://youtu.be/2-0TXPrJNqE)
 
 ## Tech Stack
 
