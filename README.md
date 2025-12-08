@@ -55,6 +55,7 @@ npm install
 ```bash
 # Terminal 1: Redis
 redis-server
+(For repo owner: C:\Redis\redis-server.exe)
 
 # Terminal 2: Backend
 python -m backend.run
