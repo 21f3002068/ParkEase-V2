@@ -133,6 +133,18 @@ ParkEase_V2_21F3002068/
 ---
 
 ## Screenshots 
+###  User Dashboard
+<img width="1831" height="909" alt="image" src="https://github.com/user-attachments/assets/170282cb-5bac-4bc5-a3b2-0e4c448e558e" />
+<img width="1829" height="911" alt="image" src="https://github.com/user-attachments/assets/1253d9f1-fe4d-49d0-a4e3-05bb91c2063f" />
+<img width="1834" height="906" alt="image" src="https://github.com/user-attachments/assets/30b6ab8e-497f-4e3b-b6d3-0f2c5536cef1" />
+<img width="1840" height="910" alt="image" src="https://github.com/user-attachments/assets/a4fac1f9-4416-4e8c-9236-3623fca06af2" />
+<img width="1838" height="908" alt="image" src="https://github.com/user-attachments/assets/193f66f8-31e6-4639-81c6-5c2903c06865" />
+### Admin Dashboard
+<img width="1832" height="906" alt="image" src="https://github.com/user-attachments/assets/0a994381-c3d7-484a-87f7-072d32374666" />
+<img width="1837" height="906" alt="image" src="https://github.com/user-attachments/assets/b3087ea0-a165-42df-8b80-ab555cfe0363" />
+<img width="1832" height="907" alt="image" src="https://github.com/user-attachments/assets/0588892f-1353-44ba-a7de-aef5f9cc35b6" />
+<img width="1836" height="907" alt="image" src="https://github.com/user-attachments/assets/b6c34bcb-7706-4bf1-85e6-62b49d2652f6" />
+<img width="1844" height="909" alt="image" src="https://github.com/user-attachments/assets/6d2b9505-7125-49cb-9323-358539e7217d" />
 
 
 ---
