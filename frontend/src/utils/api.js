@@ -1,5 +1,5 @@
 // API utility functions
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = process.env.VUE_APP_API_URL || 'http://localhost:5000/api';
 
 class ApiError extends Error {
   constructor(message, status, data) {
@@ -12,12 +12,12 @@ class ApiError extends Error {
 // Generic API request function
 async function apiRequest(endpoint, options = {}) {
   const token = localStorage.getItem('auth-token');
-  
+
   // Add cache busting query parameter instead of headers
   const cacheBuster = `_t=${Date.now()}`;
   const separator = endpoint.includes('?') ? '&' : '?';
   const urlWithCacheBuster = `${API_BASE_URL}${endpoint}${separator}${cacheBuster}`;
-  
+
   const config = {
     headers: {
       'Content-Type': 'application/json',
